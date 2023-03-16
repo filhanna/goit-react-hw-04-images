@@ -1,4 +1,4 @@
-import { Component } from "react";
+import { useState } from "react";
 import { ImageGallery } from "./ImageGallery/ImageGallery";
 import { Searchbar } from "./Searchbar/Searchbar";
 import { Modal } from "./Modal/Modal";
@@ -6,67 +6,65 @@ import { getImages } from 'servises/GalleryApi';
 
 
 
-export class App extends Component {
-  state = {
-    page: 1,
-    query: '',
-    isOpenModal: false,
-    modalImage: '',
-    images: [],
-    totalHits: 0,
-  }
+export function App() {
+  const [page, setPage] = useState(1);
+  const [query, setQuery] = useState('');
+  const [isOpenModal, setIsOpenModal] = useState(false);
+  const [modalImage, setModalImage] = useState('');
+  const [images, setImages] = useState([]);
+  const [totalHits, setTotalHits] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
   
-  getImages = async () => {
-    const { query, page, images} = this.state;
-    this.setState({
-      isLoading: true
-    });
-    const imagesArray = await getImages(query, page);
-    this.setState({
-      images: page > 1 ? [...images, ...imagesArray.hits] : imagesArray.hits,
-      totalHits: imagesArray.totalHits,
-      isLoading: false,
-    })
+  
+  const getImagesArray = async (params) => {
+    setIsLoading(true);
+    const imagesArray = await getImages(params.query, params.page);
+    setImages(params.page > 1 ? [...images, ...imagesArray.hits] : imagesArray.hits);
+    setTotalHits(imagesArray.totalHits)
+    setIsLoading(false);
   }
 
-  onSearchBarSubmit =(query) => {
-    this.setState({
-      query,
-      page: 1,
-    }, ()=> {this.getImages()})
-  }
+  const onSearchBarSubmit = (query) => {
+    setQuery(query);
+    setPage(1);
+    getImagesArray({ query, page: 1 });
+  } 
 
-  onLoadMoreClick = () => {
-    const page = this.state.page + 1;
-    this.setState({
-      page
-    }, ()=> {this.getImages()})
+  const onLoadMoreClick = () => {
+    const nextPage = page + 1;
+    setPage(nextPage)
+    getImagesArray({ query, page: nextPage });
+    
+    
   }
-  onToggleModal = () => {
-    this.setState(prev => ({ isOpenModal: !prev.isOpenModal }));
+  const onToggleModal = () => {
+    setIsOpenModal(prev => !prev);
+    
+
   };
-  onImageClick = img => {
-    this.setState({ modalImage: img, isOpenModal: true });
+  const onImageClick = img => {
+    setModalImage(img);
+    setIsOpenModal(true);
   };
 
 
-  render() {
-    const {totalHits, images, isOpenModal, modalImage} = this.state
+  
+    // const {totalHits, images, isOpenModal, modalImage} = this.state
     return (
       <>
-        <Searchbar onSubmit={this.onSearchBarSubmit} />
+        <Searchbar onSubmit={onSearchBarSubmit} />
         <ImageGallery
           totalHits={totalHits}
           images={images}
-          onLoadMoreClick={this.onLoadMoreClick}
-          onImageClick={this.onImageClick}
+          onLoadMoreClick={onLoadMoreClick}
+          onImageClick={onImageClick}
         />
         {isOpenModal && (
-          <Modal onToggleModal={this.onToggleModal}>
+          <Modal onToggleModal={onToggleModal}>
             <img src={modalImage} alt='' />
           </Modal>
         )}
       </>
     );
   };
-}
+

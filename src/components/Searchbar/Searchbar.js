@@ -11,7 +11,6 @@ import {
 export class Searchbar extends Component {
   handleSubmit = (values, { resetForm }) => {
     this.props.onSubmit(values.serch);
-    resetForm();
   };
   render() {
     return (
