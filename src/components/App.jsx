@@ -58,6 +58,7 @@ export function App() {
           images={images}
           onLoadMoreClick={onLoadMoreClick}
           onImageClick={onImageClick}
+          disabled={isLoading}
         />
         {isOpenModal && (
           <Modal onToggleModal={onToggleModal}>
